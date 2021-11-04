@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.DepartmentMapper">
+
+<!--    public Department getDeptById(Integer id);-->
+    <select id="getDeptById" resultType="com.atguigu.Department">
+        select id,dept_name from tbl_dept where id = #{id}
+    </select>
+
+
+<!--    collection嵌套结果集的方式，定义关联的集合类型元素封装规则-->
+
+<!--    查询的字段-->
+<!--      d_id  d_deptname    ||   e_id   e_lastname   e_email   e_gender   e_deptid -->
+
+<!--    JavaBean属性-->
+<!--    private Integer id;-->
+<!--    private String deptName;-->
+<!--    private List<Employee> emps;-->
+
+<!--    封装规则-->
+    <resultMap id="MyDept" type="com.atguigu.Department">
+        <id column="d_id" property="id"></id>
+        <result column="d_deptname" property="deptName"></result>
+<!--        collectiond:定义关联的集合类型属性      ofType:指定集合中的元素类型  -->
+        <collection property="emps" ofType="com.atguigu.Employee" >
+            <id column="e_id" property="id"></id>
+            <result column="e_lastname" property="lastName"></result>
+            <result column="e_email" property="email"></result>
+            <result column="e_gender" property="gender"></result>
+        </collection>
+    </resultMap>
+
+<!--    查询的SQL语句-->
+<!--    public Department getAllDeptById(Integer id);-->
+    <resultMap id="MyDeptStep" type="com.atguigu.Department">
+        <id column="id" property="id"></id>
+        <result column="dept_name" property="deptName"></result>
+        <collection property="emps"
+                    select="com.atguigu.EmployeeMapper.getEmpByDeptId"
+                    column="deptId=id" fetchType="lazy">
+            <!--        将多列的值传递
+                column="{key1=column1,key2=column2}"
+                fetchType="lazy"       表示使用延迟加载
+                 fetchType="eager"     表示立即加载
+
+            -->
+
+        </collection>
+
+    </resultMap>
+
+    
+<!--    public Department getDeptByIdStep(Integer id);-->
+    <select id="getAllDeptById" resultMap="MyDept">
+        SELECT d.`id` d_id,d.`dept_name` d_deptname,
+               e.`id` e_id,e.`last_name` e_lastname,e.`email` e_email,e.`gender` e_gender,
+               e.`dept_id` e_deptid
+        FROM tbl_dept d
+                 LEFT JOIN tbl_employee e ON d.`id` = e.`dept_id`
+        WHERE d.`id` = 2;
+    </select>
+    <select id="getDeptByIdStep" resultMap="MyDeptStep">
+        select id,dept_name from tbl_dept where id = #{id}
+    </select>
+
+
+
+
+</mapper>

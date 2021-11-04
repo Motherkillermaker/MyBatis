@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.EmployeeDynamicSQL">
+<!--    if ：   判断-->
+<!--    choose（when, otherwise）:    分支选择-->
+<!--    trim(where(封装查询条件), set（封装修改条件）)：   截取-->
+<!--    foreach-->
+
+
+<!--    查询员工：-->
+<!--        要求：携带了哪个字段查询条件就带上这个字段的值-->
+<!--    public List<Employee> getEmpByConditionIf(Employee employee);-->
+    <select id="getEmpByConditionIf" resultType="com.atguigu.Employee">
+        select * from tbl_employee
+#         where
+            <where>
+                <if test="id != null">
+                   and id = #{id}
+                </if>
+                <if test="lastName != null and !&quot; !&quot; .equals(lastName)">
+                    and last_name like #{lastName}
+                </if>
+                <if test="gender == 0 or gender == 1">
+                    and gender = #{gender}
+                </if>
+            </where>
+    </select>
+
+<!--    trim 标签的使用: 自定义字符串截取规则-->
+<!--    public List<Employee> getEmpByConditionTrim(Employee employee);-->
+    <select id="getEmpByConditionTrim" resultType="com.atguigu.Employee">
+        select * from tbl_employee
+#             后面多出的and或者Or where标签不能解决
+#         prefix: 前缀，trim标签体中是整个字符串拼串后的结果
+#         prefixOverrides： 前缀覆盖，去掉整个字符串前面多余的字符
+#         suffix： 后缀，给拼串后的整个字符串加一个后缀
+#         suffixOverrides： 后缀覆盖，去掉整个字符串后面多余的字符
+        <trim prefix="where" suffixOverrides="and">
+            <if test="id != null">
+                 id = #{id} and
+            </if>
+            <if test="lastName != null and !&quot; !&quot; .equals(lastName)">
+                 last_name like #{lastName} and
+            </if>
+            <if test="gender == 0 or gender == 1">
+                 gender = #{gender}
+            </if>
+            </trim>
+    </select>
+
+<!--    public void updateEmp(Employee employee);-->
+    <update id="updateEmp">
+        update tbl_employee
+        <set>
+            <if test="lastName != null">
+                last_name = #{lastName},
+            </if>
+            <if test="email != null">
+                email = #{email},
+            </if>
+            <if test="gender != null">
+                gender = #{gender}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+
+<!--    choose标签的使用-->
+<!--    public List<Employee> getEmpByConditionChoose(Employee employee);-->
+    <select id="getEmpByConditionChoose" resultType="com.atguigu.Employee">
+        select * from tbl_employee
+        <where>
+#             如果带了id就使用id,带了lastname就使用lastname,只会进入其中一个
+            <choose>
+                <when test="id != null">
+                    id = #{id}
+                </when>
+                <when test="lastName != null">
+                    last_name like #{lastName}
+                </when>
+                <when test="email != null">
+                    email = #{email}
+                </when>
+                <otherwise>
+                    gender = 0
+                </otherwise>
+            </choose>
+        </where>
+    </select>
+
+<!--    foreach标签的使用-->
+<!--    public List<Employee> getEmpByConditionForeach(List<Integer> integers);-->
+    <select id="getEmpByConditionForeach" resultType="com.atguigu.Employee">
+        select * from tbl_employee where id in
+        <!--
+        collection: 指定要遍历的集合
+                    list类型的参数会特殊处理封装在map集合中，map的key就叫做list
+        item: 将当前遍历出的元素赋值给指定的变量
+        separator: 每个元素之间的分隔符
+        open:  遍历出所有结果拼接一个开始的字符
+        close： 遍历出所有结果拼接一个结束的字符
+        #{} :   取出变量的值，也就是当前遍历出的元素
+        index： 遍历list的时候是索引， 遍历Map的时候index表示为map的key, item为map的值
+
+        -->
+        <foreach collection="ids" item="item_id" separator="," open="(" close=")" index="i">
+            #{item_id}
+        </foreach>
+    </select>
+
+<!--    使用foreach标签进行批量保存-->
+<!--    public void addEmps(@Param("emps") List<Employee> emps);-->
+    <insert id="addEmps" >
+        INSERT INTO tbl_employee(last_name,email,gender,dept_id)
+        VALUES
+        <foreach collection="emps" item="emp" separator=",">
+            (#{emp.lastName},#{emp.email},#{emp.gender},#{emp.dept.id})
+        </foreach>
+    </insert>
+
+
+<!--    两个内置参数-->
+    <!--
+    _parmeter: 代表整个参数
+                单个参数： _parmeter就是这个参数
+                多个参数： 参数会被封装成一个map，_parmeter就代表这个map
+
+    _databaseId: 如果配置了databaseIdProvider标签
+                _databaseId 就代表当前数据库的别名
+    -->
+
+<!--
+        抽取可重用的sql片段，方便后面的引用
+        1.sql抽取，经常要查询的列名，或者插入用的列名抽取出来方便引用
+        2.include标签来引用已经抽取的sql
+        3.include还可以自定义一些property，sql标签内部就可以使用自定义的属性
+            include-property,取值的正确方式 ${prop}
+                             错误方式 #{prop}
+-->
+    <sql id="insertColumn">
+        last_name,email,gender,dept_id
+    </sql>
+
+
+</mapper>

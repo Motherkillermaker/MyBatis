@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+ PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+	<!--	1.mybatis可以使用properties来引入外部配置文件-->
+	<properties resource="jdbc.properties"></properties>
+	<!--	2.settings包含许多重要设置项-->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	<!--	3.别名处理器typeAliases(默认为类名首字母小写/别名不区分大小写)-->
+	<typeAliases>
+<!--		1)单独为某个Bean取别名-->
+<!--		<typeAlias type="com.atguigu.Employee" alias="employee"></typeAlias>-->
+<!--		<typeAlias type="com.atguigu.Department" alias="department"></typeAlias>-->
+<!--		2)批量起别名(给当前及下面的所有包批量起默认别名)-->
+		<package name="com.atguigu.mybatis.bean"/>
+<!--		3)在bean类的上面加上Alias注解给当前类起别名-->
+	</typeAliases>
+	<!--	4.environments标签可以配置mybatis多种环境-->
+	<!--	1.必须有两个标签transactionManager和dataSource-->
+
+<!--	配置自定义的枚举处理器-->
+	<typeHandlers>
+		<typeHandler handler="com.atguigu.mybatis.typehandler.MyEnumEmpStatusTypeHandler" javaType="com.atguigu.mybatis.bean.EmpStatus"></typeHandler>
+				<!--2、也可以在处理某个字段的时候告诉MyBatis用什么类型处理器
+				保存：#{empStatus,typeHandler=xxxx}
+				查询：
+					<resultMap type="com.atguigu.mybatis.bean.Employee" id="MyEmp">
+				 		<id column="id" property="id"/>
+				 		<result column="empStatus" property="empStatus" typeHandler=""/>
+				 	</resultMap>
+				注意：如果在参数位置修改TypeHandler，应该保证保存数据和查询数据用的TypeHandler是一样的。
+	-->
+	</typeHandlers>
+
+
+	<environments default="development">
+		<environment id="development">
+			<transactionManager type="JDBC" />
+			<dataSource type="POOLED">
+				<property name="driver" value="${jdbc.driver}" />
+				<property name="url" value="${jdbc.url}" />
+				<property name="username" value="${jdbc.username}" />
+				<property name="password" value="${jdbc.password}" />
+			</dataSource>
+		</environment>
+	</environments>
+
+	<!-- 将我们写好的sql映射文件（EmployeeMapper.xml）一定要注册到全局配置文件（mybatis-config.xml）中 -->
+	<mappers>
+<!--		1)方式一(有sql映射文件，且映射文件名和接口同名，放在与接口同一目录下)-->
+<!--		<mapper resource="mapper/EmployeeMapper.xml" />-->
+<!--		2）方式二（没有sql映射文件，所有sql都是利用注解写在接口上）-->
+<!--		<mapper class="com.atguigu.EmployeeMapperAnnotation" />-->
+<!--		3)方式三（批量注册,且映射文件名和接口同名，放在与接口同一目录下）-->
+		<package name="com.atguigu.mybatis.dao"/>
+	</mappers>
+
+
+</configuration>

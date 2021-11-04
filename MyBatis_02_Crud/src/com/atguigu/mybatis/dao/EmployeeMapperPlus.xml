@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mybatis.dao.EmployeeMapperPlus">
+    
+<!--    public Employee getEmpById(Integer id);-->
+<!--    resultMap自定义结果集映射规则-->
+
+<!--    自定义结果集映射规则
+        type：自定义规则的java类型
+
+-->
+    <resultMap id="MyEmp" type="com.atguigu.Employee">
+
+<!--        主键列(property为javabean属性)-->
+        <id column="id" property="id"></id>
+        <result column="last_name" property="lastName"></result>
+        <result column="email" property="email"></result>
+        <result column="gender" property="gender"></result>
+
+    </resultMap>
+    <select id="getEmpById"  resultMap="MyEmp">
+        select * from tbl_employee where id = #{id}
+    </select>
+
+    
+<!--    查询员工的同时查询员工所对应的部门-->
+<!--    id  last_name  gender  dept_id     did  dept_name (结果集封装)-->
+    <resultMap id="MyDifEmp" type="com.atguigu.Employee">
+        <id column="id" property="id"></id>
+        <result column="last_name" property="lastName"></result>
+        <result column="gender" property="gender"></result>
+        <!--    1.级联属性封装结果集-->
+<!--        <result column="did" property="dept.id"></result>-->
+<!--        <result column="dept_name" property="dept.deptName"></result>-->
+
+        <!--    2.association可以指定联合的javabean对象
+            property: 指定哪个属性是联合的对象
+            javaType: 指定这个属性对象的类型（不能省略）-->
+
+        <association property="dept" javaType="com.atguigu.Department">
+            <id column="did" property="id"></id>
+            <result column="dept_name" property="deptName"></result>
+        </association>
+    </resultMap>
+
+    <!--   3.使用association进行分布查询
+    一、先根据员工id查询员工信息
+    二、根据查询员工信息的 dept_id 值去部门表中查询部门信息
+    三、将部门信息设置到员工当中
+    -->
+    <!--    public Employee getEmpByIdStep(Integer id);-->
+    <!--    id  last_name  gender  email        dept_id-->
+    <resultMap id="MyEmpByStep" type="com.atguigu.Employee">
+        <id column="id" property="id"></id>
+        <result column="last_name" property="lastName"></result>
+        <result column="gender" property="gender"></result>
+        <result column="email" property="email"></result>
+        <!--        定义关联对象的封装规则
+        select: 表明当前属性是调用select指定的方法查询的结果
+        column: 指定将哪一列的值传给这个方法
+        流程： 使用select指定的方法（传入column指定的这列参数的值）查出对象，并封装给property指定的属性
+        -->
+        <association property="dept"
+                     select="com.atguigu.DepartmentMapper.getDeptById"
+                     column="dept_id">
+        </association>
+    </resultMap>
+    <select id="getEmpByIdStep" resultMap="MyEmpByStep">
+        select * from tbl_employee where id = #{id}
+    </select>
+
+
+<!--    public Employee getEmpAndDept(Integer id);-->
+    <select id="getEmpAndDept" resultMap="MyDifEmp">
+        SELECT e.`id`,e.`last_name`,e.`gender`,e.`dept_id`,d.`id` did,d.`dept_name` dept_name
+        FROM tbl_employee e,tbl_dept d
+        WHERE e.`dept_id` = d.`id` AND e.`dept_id` = #{id}
+    </select>
+
+
+<!--    ========================================场景二========================================
+        查询部门信息时将部门对应的所有员工信息也查出来 DepartmentMapper.xml中
+-->
+
+
+
+
+
+
+
+
+
+</mapper>

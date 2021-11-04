@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+ "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.EmployeeMapper">
+<!-- 
+namespace:名称空间;指定为接口的全类名
+id：唯一标识
+resultType：返回值类型
+#{id}：从传递过来的参数中取出id值
+ -->
+
+<!--	public List<Employee> getEmpByDeptId(Integer id);-->
+	<select id="getEmpByDeptId" resultType="com.atguigu.Employee">
+		select * from tbl_employee where dept_id = #{deptId}
+	</select>
+
+
+<!--public Map<Integer, Employee> getEmpByLastName(String lastname);-->
+	<select id="getEmpByLastNameMap" resultType="com.atguigu.Employee">
+		select * from tbl_employee where last_name like #{lastname}
+	</select>
+
+<!--	返回一条记录的Map（key为列名，值为对应的值）-->
+<!--public Map<String,Object> getEmpByIdMap(Integer id);-->
+	<select id="getEmpByIdMap" resultType="map">
+		select * from tbl_employee where id = #{id}
+	</select>
+
+
+
+<!--	模糊查询-->
+<!--public List<Employee> getEmpsByLastName(String lastname);-->
+	<select id="getEmpsByLastName" resultType="com.atguigu.Employee">
+		select * from tbl_employee where last_name like #{lastname}
+	</select>
+
+<!--	mybatis对于查询语句多个参数的测试(  #{}内为注解标明的value值  )-->
+<!--public Employee getEmpByIdAndLastName(Integer id,String lastname);-->
+	<select id="getEmpByIdAndLastName" resultType="com.atguigu.Employee">
+		select id,last_name lastName,email,gender from tbl_employee where id = #{id} and last_name = #{lastName}
+	</select>
+
+<!--public EmployeeMapper getEmpById(Integer id);-->
+	<select id="getEmpById" resultType="com.atguigu.Employee">
+		select id,last_name lastName,email,gender from tbl_employee where id = #{id}
+	</select>
+
+<!--	public void addEmp(Employee employee);-->
+	<insert id="addEmp" useGeneratedKeys="true" keyProperty="id" databaseId="mysql">
+		insert into tbl_employee(last_name,email,gender)
+		values (#{lastName},#{email},#{gender})
+	</insert>
+
+<!--	public void deleteEmp(Integer id);-->
+	<delete id="deleteEmp">
+		delete from tbl_employee where id=#{id}
+	</delete>
+
+<!--	public void updateEmp(Employee employee);-->
+	<update id="updateEmp">
+		update tbl_employee set last_name=#{lastName},email=#{email},gender=#{gender} where id = #{id}
+	</update>
+
+</mapper>
